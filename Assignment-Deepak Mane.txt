@@ -1,0 +1,399 @@
+
+===========================================================================Statement-1========================================================================
+
+
+==================================================
+1) Project Setup and Kubernetes Deployment
+==================================================   
+Step 1: Clone the Project Repository
+First, you need to clone the given repository:-
+      
+              git clone https://github.com/dvmane100/Deepak-m-qa-test
+              
+              cd qa-test
+
+Step 2: Install Minikube (or Kind)
+If you don't already have Minikube or Kind installed, you can follow these steps to install Minikube.
+
+For Minikube (on Linux/macOS/Windows):-
+
+
+              # Install Minikube
+              curl -LO https://storage.googleapis.com/minikube/releases/latest/minikube-linux-amd64
+              sudo install minikube-linux-amd64 /usr/local/bin/minikube
+
+              # Start Minikube cluster
+               minikube start
+
+
+Step 3: Create Kubernetes Deployments and Services
+Next, you need to deploy both frontend and backend services using Kubernetes. Assuming the repository contains YAML files for deployment, you can apply those files.
+
+              # Navigate to the deployment YAML files directory
+                cd kubernetes/
+
+              # Apply the backend deployment and service
+		kubectl apply -f backend-deployment.yaml
+		kubectl apply -f backend-service.yaml
+
+	      # Apply the frontend deployment and service
+		kubectl apply -f frontend-deployment.yaml
+		kubectl apply -f frontend-service.yaml
+
+
+If the repository does not provide the YAML files, you can create them manually.
+
+Example YAML files:
+
+Backend Deployment (backend-deployment.yaml):-
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+      - name: backend
+        image: vengateshm/backend:latest  # Example image, replace with actual image
+        ports:
+        - containerPort: 8080
+
+
+Backend Service (backend-service.yaml):-
+
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: backend-service
+spec:
+  selector:
+    app: backend
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
+
+
+
+Frontend Deployment (frontend-deployment.yaml):-
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: frontend
+  template:
+    metadata:
+      labels:
+        app: frontend
+    spec:
+      containers:
+      - name: frontend
+        image: vengateshm/frontend:latest  # Example image, replace with actual image
+        ports:
+        - containerPort: 80
+
+
+
+Step 4: Verify Communication Between Frontend and Backend
+Once the services are deployed, ensure that the frontend can communicate with the backend. You can access the frontend URL via Minikube:-
+
+
+minikube service frontend-service
+
+This will open the frontend service in your browser. Verify that the greeting message fetched from the backend is displayed correctly on the frontend.
+
+
+
+
+==================================================
+2. Automated Testing
+write a simple test script using a tool like Selenium (for UI testing) or Cypress (for frontend testing). Below is an example using Cypress for automated testing.
+
+Step 1: Install Cypress
+If Cypress is not already installed, you can install it using npm.
+
+
+Step 1: Install Cypress
+If Cypress is not already installed, you can install it using npm.
+
+
+npm init -y
+npm install cypress --save-dev
+
+
+
+Step 2: Write a Cypress Test Script
+Create a new test file under cypress/integration (e.g., frontend-backend-test.js):
+
+
+describe('Frontend-Backend Integration Test', () => {
+  it('should display the greeting message from the backend', () => {
+    // Visit the frontend URL (replace with your Minikube IP and port)
+    cy.visit('http://localhost:3000') // Use your actual URL here
+
+    // Check that the greeting message fetched from the backend is displayed
+    cy.contains('Hello from backend!') // Replace with the actual message
+  })
+})
+
+
+Step 3: Run the Cypress Test
+To run the test, use the following command:-
+
+
+npx cypress open
+
+
+
+In the Cypress Test Runner, select the test file (frontend-backend-test.js), and Cypress will execute the test, verifying that the frontend displays the message from the backend.
+
+
+
+
+==================================================
+3. Documentation and README
+==================================================
+Provide a README.md file in your repository with instructions on how to set up the local Kubernetes cluster and run the automated tests.
+
+Example README.md:
+
+
+# QA Test Assignment
+
+## Project Setup
+
+### Prerequisites
+- Install [Minikube](https://minikube.sigs.k8s.io/docs/start/) or [Kind](https://kind.sigs.k8s.io/)
+- Install [kubectl](https://kubernetes.io/docs/tasks/tools/install-kubectl/)
+- Install [npm](https://www.npmjs.com/get-npm) for running Cypress tests
+
+### Deploy Services to Kubernetes
+
+1. Start Minikube:
+   ```bash
+   minikube start
+
+
+
+2.Navigate to the kubernetes directory and apply the deployment YAML files:
+
+kubectl apply -f backend-deployment.yaml
+kubectl apply -f backend-service.yaml
+kubectl apply -f frontend-deployment.yaml
+kubectl apply -f frontend-service.yaml
+
+
+3. Access the frontend service:
+
+minikube service frontend-service
+
+The frontend should display a greeting message fetched from the backend.
+
+
+//Running Automated Tests//
+
+1.Install dependencies:-
+  npm install
+
+2.Run Cypress tests:-
+  npx cypress open
+
+In the Cypress Test Runner, select the frontend-backend-test.js file and run the test to verify the integration between the frontend and backend.
+
+
+
+//Automated Testing//
+
+The cypress/integration/frontend-backend-test.js file contains the automated test to check if the frontend displays the correct greeting message from the backend.
+
+**Final Deliverables**
+
+Once all steps are completed, push your project to a public GitHub repository:
+
+1. Create a repository on GitHub.
+2. Push your local project to the GitHub repository:
+   ```bash
+   git add .
+   git commit -m "Initial commit"
+   git push origin main
+
+
+Your deliverables should include:
+
+Kubernetes deployment files (e.g., backend-deployment.yaml, frontend-deployment.yaml).
+Cypress test script in cypress/integration/frontend-backend-test.js.
+README.md file with setup and execution instructions.
+
+
+
+===========================================================================Statement-2========================================================================
+
+==================================
+1. System Health Monitoring Script (Objective 1)
+==================================
+This script will monitor CPU usage, memory usage, disk space, and running processes. If any metrics exceed a predefined threshold 
+(e.g., CPU usage > 80%), the script will log the information to a file.
+
+
+
+import psutil
+import time
+import logging
+
+# Set thresholds
+CPU_THRESHOLD = 80.0  # CPU usage percentage
+MEMORY_THRESHOLD = 80.0  # Memory usage percentage
+DISK_THRESHOLD = 80.0  # Disk usage percentage
+
+# Setup logging
+logging.basicConfig(filename='system_health.log', level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+def check_cpu_usage():
+    cpu_usage = psutil.cpu_percent(interval=1)
+    if cpu_usage > CPU_THRESHOLD:
+        logging.warning(f'High CPU usage detected: {cpu_usage}%')
+    return cpu_usage
+
+def check_memory_usage():
+    memory_info = psutil.virtual_memory()
+    memory_usage = memory_info.percent
+    if memory_usage > MEMORY_THRESHOLD:
+        logging.warning(f'High Memory usage detected: {memory_usage}%')
+    return memory_usage
+
+def check_disk_space():
+    disk_info = psutil.disk_usage('/')
+    disk_usage = disk_info.percent
+    if disk_usage > DISK_THRESHOLD:
+        logging.warning(f'Low Disk space: {disk_usage}% used')
+    return disk_usage
+
+def check_process_count():
+    process_count = len(psutil.pids())
+    logging.info(f'Total running processes: {process_count}')
+    return process_count
+
+def monitor_system():
+    while True:
+        cpu = check_cpu_usage()
+        memory = check_memory_usage()
+        disk = check_disk_space()
+        processes = check_process_count()
+
+        logging.info(f'CPU: {cpu}%, Memory: {memory}%, Disk: {disk}%')
+        time.sleep(10)  # Check every 10 seconds
+
+if __name__ == '__main__':
+    monitor_system()
+
+
+-----------------------
+How it works:
+The script uses the psutil library to check CPU, memory, and disk space usage, and counts the number of running processes.
+If CPU or memory usage exceeds 80%, it logs a warning.
+The script runs continuously, checking the system every 10 seconds, and logs information in system_health.log.
+
+------------------------
+
+Running the script:-
+
+1.Install the required package.
+
+  pip install psutil
+
+2.Run the script:-
+  
+  python system_health_monitor.py
+
+
+
+
+==================================
+2. Automated Backup Solution (Objective 2)
+==================================
+
+This Python script will back up a specified directory to a remote server using rsync. The script will log the result of the backup operation to a log file.
+
+Python Script:
+              import os
+import subprocess
+import logging
+from datetime import datetime
+
+# Backup configuration
+SOURCE_DIR = '/path/to/source_directory'
+REMOTE_USER = 'remote_username'
+REMOTE_SERVER = 'remote_server_address'
+REMOTE_DIR = '/path/to/remote_directory'
+
+# Setup logging
+logging.basicConfig(filename='backup.log', level=logging.INFO, 
+                    format='%(asctime)s - %(levelname)s - %(message)s')
+
+def backup_directory():
+    # Command to run rsync for backup
+    command = f"rsync -avz {SOURCE_DIR} {REMOTE_USER}@{REMOTE_SERVER}:{REMOTE_DIR}"
+    
+    try:
+        # Run the backup command
+        subprocess.run(command, shell=True, check=True)
+        logging.info('Backup completed successfully')
+    except subprocess.CalledProcessError as e:
+        logging.error(f'Backup failed with error: {e}')
+
+def generate_report():
+    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+    report = f"Backup Report - {current_time}\n"
+    with open('backup.log', 'r') as log_file:
+        logs = log_file.readlines()
+        report += ''.join(logs[-10:])  # Display last 10 log lines in the report
+
+    # Save the report to a file
+    with open('backup_report.txt', 'w') as report_file:
+        report_file.write(report)
+
+    print("Backup report generated: backup_report.txt")
+
+if __name__ == '__main__':
+    backup_directory()
+    generate_report()
+
+
+-------------------------
+How it works:
+The script uses rsync to back up the source directory to a remote server.
+If the backup succeeds, a success message is logged. If it fails, an error message is logged.
+The script generates a backup report summarizing the last 10 log entries.
+
+
+Running the script:
+Ensure rsync is installed on both the local and remote machines.
+Modify the variables SOURCE_DIR, REMOTE_USER, REMOTE_SERVER, and REMOTE_DIR with actual paths and credentials.
+
+Run the script:
+python backup_script.py
+
+
+
+
+
+
+
